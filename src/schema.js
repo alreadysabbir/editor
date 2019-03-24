@@ -8,6 +8,9 @@ export default {
   blocks: {
     image: {
       isVoid: true
+    },
+    file: {
+      isVoid: true
     }
   }
 };
