@@ -99,11 +99,6 @@ class App extends Component {
     this.setState({ value });
   };
 
-  onClickMark = (event, type) => {
-    event.preventDefault();
-    this.editor.toggleMark(type);
-  };
-
   onOpenImage = event => {
     this.inputImageFile.current.click();
   };
@@ -118,49 +113,24 @@ class App extends Component {
   onFileSelect = event => {
     fileUploader(event, this.editor, filesInsert);
   };
-
   onClickBlock = (event, type) => {
     event.preventDefault();
-
-    const { editor } = this;
-    const { value } = editor;
-    const { document } = value;
-
-    // Handle everything but list buttons.
-    if (type !== 'bulleted-list' && type !== 'numbered-list') {
-      const isActive = this.hasBlock(type);
-      const isList = this.hasBlock('list-item');
-
-      if (isList) {
-        editor
-          .setBlocks(isActive ? DEFAULT_NODE : type)
-          .unwrapBlock('bulleted-list')
-          .unwrapBlock('numbered-list');
-      } else {
-        editor.setBlocks(isActive ? DEFAULT_NODE : type);
-      }
+    if (this.isList()) {
+      this.editor.unwrapList();
     } else {
-      // Handle the extra wrapping required for list buttons.
-      const isList = this.hasBlock('list-item');
-      const isType = value.blocks.some(block => {
-        return !!document.getClosest(block.key, parent => parent.type === type);
-      });
-
-      if (isList && isType) {
-        editor
-          .setBlocks(DEFAULT_NODE)
-          .unwrapBlock('bulleted-list')
-          .unwrapBlock('numbered-list');
-      } else if (isList) {
-        editor
-          .unwrapBlock(
-            type === 'bulleted-list' ? 'numbered-list' : 'bulleted-list'
-          )
-          .wrapBlock(type);
-      } else {
-        editor.setBlocks('list-item').wrapBlock(type);
-      }
+      this.editor.wrapList({ type });
     }
+  };
+
+  onClickMark = (event, type) => {
+    event.preventDefault();
+    this.editor.toggleMark(type);
+  };
+
+  isList = () => {
+    const { value } = this.state;
+    value.blocks.forEach(block => console.log(block.type));
+    return value.blocks.some(block => block.type === 'list-item-child');
   };
 
   hasMark = type => {
@@ -212,8 +182,8 @@ class App extends Component {
       {this.renderMarkButton('italic', 'italic')}
       {this.renderMarkButton('underlined', 'underline')}
       {this.renderBlockButton('block-quote', 'quote-right')}
-      {this.renderBlockButton('numbered-list', 'list-ol')}
-      {this.renderBlockButton('bulleted-list', 'list-ul')}
+      {this.renderBlockButton('ordered-list', 'list-ol')}
+      {this.renderBlockButton('unordered-list', 'list-ul')}
       <Button icon="images" onClick={this.onImage} />
       <Button icon="file-image" onClick={this.onOpenImage} />
       <Button icon="file-upload" onClick={this.onOpenFile} />
@@ -245,12 +215,13 @@ class App extends Component {
     switch (node.type) {
       case 'block-quote':
         return <blockquote {...attributes}>{children}</blockquote>;
-      case 'bulleted-list':
+      case 'unorderd-list':
         return <ul {...attributes}>{children}</ul>;
+      case 'ordered-list':
+        return <ol {...attributes}>{children}</ol>;
       case 'list-item':
         return <li {...attributes}>{children}</li>;
-      case 'numbered-list':
-        return <ol {...attributes}>{children}</ol>;
+
       case 'image': {
         const src = node.data.get('src');
         return <img src={src} selected={isFocused} {...attributes} alt="" />;
@@ -300,17 +271,7 @@ class App extends Component {
   };
 
   renderBlockButton = (type, icon) => {
-    let isActive = this.hasBlock(type);
-
-    if (['numbered-list', 'bulleted-list'].includes(type)) {
-      const { value: { document, blocks } } = this.state;
-
-      if (blocks.size > 0) {
-        const parent = document.getParent(blocks.first().key);
-        isActive = this.hasBlock('list-item') && parent && parent.type === type;
-      }
-    }
-
+    const isActive = this.hasBlock(type);
     return (
       <Button
         icon={icon}
