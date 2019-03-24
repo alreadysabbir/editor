@@ -11,7 +11,11 @@ import {
   faLink,
   faUndo,
   faRedo,
-  faSave
+  faSave,
+  faFileUpload,
+  faFileImage,
+  faFilePdf,
+  faFile
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -26,5 +30,9 @@ library.add(
   faLink,
   faUndo,
   faRedo,
-  faSave
+  faSave,
+  faFileUpload,
+  faFileImage,
+  faFilePdf,
+  faFile
 );
