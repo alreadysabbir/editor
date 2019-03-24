@@ -1,30 +1,23 @@
-import React, { Component } from "react";
-import { Editor } from "slate-react";
-import { Value } from "slate";
-import { hot } from "react-hot-loader";
-import { isKeyHotkey } from "is-hotkey";
+import React, { Component } from 'react';
+import { Editor } from 'slate-react';
+import { Value } from 'slate';
+import { hot } from 'react-hot-loader';
 
 import {
   getLocalContents,
   saveToLocal,
   isDocumentEdited,
   insertImage
-} from "./utils";
-import { Toolbar, Button } from "./Components";
-import initialContents from "./initialContents.json";
-import schema from "./schema";
-import plugins from "./plugins";
-import "./App.css";
-require("./icons");
+} from './utils';
+import { Toolbar, Button } from './Components';
+import initialContents from './initialContents.json';
+import schema from './schema';
+import plugins from './plugins';
+import './App.css';
+require('./icons');
 
 const savedContents = getLocalContents();
-const DEFAULT_NODE = "paragraph";
-
-const isBoldHotkey = isKeyHotkey("mod+b");
-const isItalicHotkey = isKeyHotkey("mod+i");
-const isUnderlinedHotkey = isKeyHotkey("mod+u");
-const isSaveHotkey = isKeyHotkey("mod+s");
-const isUndoHotkey = isKeyHotkey("mod+z");
+const DEFAULT_NODE = 'paragraph';
 
 class App extends Component {
   state = {
@@ -40,7 +33,7 @@ class App extends Component {
   };
   onImage = event => {
     event.preventDefault();
-    const src = window.prompt("Enter the URL of the image:");
+    const src = window.prompt('Enter the URL of the image:');
     if (!src) return;
     this.editor.command(insertImage, src);
   };
@@ -49,22 +42,6 @@ class App extends Component {
       saveToLocal(value);
     }
     this.setState({ value });
-  };
-  onKeyDown = (event, editor, next) => {
-    let mark;
-
-    if (isBoldHotkey(event)) {
-      mark = "bold";
-    } else if (isItalicHotkey(event)) {
-      mark = "italic";
-    } else if (isUnderlinedHotkey(event)) {
-      mark = "underlined";
-    } else {
-      return next();
-    }
-
-    event.preventDefault();
-    editor.toggleMark(mark);
   };
 
   onClickMark = (event, type) => {
@@ -80,21 +57,21 @@ class App extends Component {
     const { document } = value;
 
     // Handle everything but list buttons.
-    if (type !== "bulleted-list" && type !== "numbered-list") {
+    if (type !== 'bulleted-list' && type !== 'numbered-list') {
       const isActive = this.hasBlock(type);
-      const isList = this.hasBlock("list-item");
+      const isList = this.hasBlock('list-item');
 
       if (isList) {
         editor
           .setBlocks(isActive ? DEFAULT_NODE : type)
-          .unwrapBlock("bulleted-list")
-          .unwrapBlock("numbered-list");
+          .unwrapBlock('bulleted-list')
+          .unwrapBlock('numbered-list');
       } else {
         editor.setBlocks(isActive ? DEFAULT_NODE : type);
       }
     } else {
       // Handle the extra wrapping required for list buttons.
-      const isList = this.hasBlock("list-item");
+      const isList = this.hasBlock('list-item');
       const isType = value.blocks.some(block => {
         return !!document.getClosest(block.key, parent => parent.type === type);
       });
@@ -102,16 +79,16 @@ class App extends Component {
       if (isList && isType) {
         editor
           .setBlocks(DEFAULT_NODE)
-          .unwrapBlock("bulleted-list")
-          .unwrapBlock("numbered-list");
+          .unwrapBlock('bulleted-list')
+          .unwrapBlock('numbered-list');
       } else if (isList) {
         editor
           .unwrapBlock(
-            type === "bulleted-list" ? "numbered-list" : "bulleted-list"
+            type === 'bulleted-list' ? 'numbered-list' : 'bulleted-list'
           )
           .wrapBlock(type);
       } else {
-        editor.setBlocks("list-item").wrapBlock(type);
+        editor.setBlocks('list-item').wrapBlock(type);
       }
     }
   };
@@ -137,12 +114,12 @@ class App extends Component {
           <Button icon="save" />
           <Button icon="undo" onClick={this.onUndo} />
           <Button icon="redo" onClick={this.onRedo} />
-          {this.renderMarkButton("bold", "bold")}
-          {this.renderMarkButton("italic", "italic")}
-          {this.renderMarkButton("underlined", "underline")}
-          {this.renderBlockButton("block-quote", "quote-right")}
-          {this.renderBlockButton("numbered-list", "list-ol")}
-          {this.renderBlockButton("bulleted-list", "list-ul")}
+          {this.renderMarkButton('bold', 'bold')}
+          {this.renderMarkButton('italic', 'italic')}
+          {this.renderMarkButton('underlined', 'underline')}
+          {this.renderBlockButton('block-quote', 'quote-right')}
+          {this.renderBlockButton('numbered-list', 'list-ol')}
+          {this.renderBlockButton('bulleted-list', 'list-ul')}
           <Button icon="images" onClick={this.onImage} />
           <Button icon="link" />
           <Button icon="paperclip" />
@@ -151,12 +128,11 @@ class App extends Component {
           <Editor
             spellCheck
             autoFocus
-            schema={schema}
             plugins={plugins}
+            schema={schema}
             placeholder="Start typing..."
             value={this.state.value}
             onChange={this.onChange}
-            onKeyDown={this.onKeyDown}
             renderNode={this.nodesRenderer}
             renderMark={this.renderMark}
             ref={this.ref}
@@ -169,16 +145,16 @@ class App extends Component {
   nodesRenderer = (props, editor, next) => {
     const { attributes, children, node, isFocused } = props;
     switch (node.type) {
-      case "block-quote":
+      case 'block-quote':
         return <blockquote {...attributes}>{children}</blockquote>;
-      case "bulleted-list":
+      case 'bulleted-list':
         return <ul {...attributes}>{children}</ul>;
-      case "list-item":
+      case 'list-item':
         return <li {...attributes}>{children}</li>;
-      case "numbered-list":
+      case 'numbered-list':
         return <ol {...attributes}>{children}</ol>;
-      case "image": {
-        const src = node.data.get("src");
+      case 'image': {
+        const src = node.data.get('src');
         return <img src={src} selected={isFocused} {...attributes} alt="" />;
       }
       default:
@@ -190,11 +166,11 @@ class App extends Component {
     const { children, mark, attributes } = props;
 
     switch (mark.type) {
-      case "bold":
+      case 'bold':
         return <strong {...attributes}>{children}</strong>;
-      case "italic":
+      case 'italic':
         return <em {...attributes}>{children}</em>;
-      case "underlined":
+      case 'underlined':
         return <u {...attributes}>{children}</u>;
       default:
         return next();
@@ -214,14 +190,12 @@ class App extends Component {
   renderBlockButton = (type, icon) => {
     let isActive = this.hasBlock(type);
 
-    if (["numbered-list", "bulleted-list"].includes(type)) {
-      const {
-        value: { document, blocks }
-      } = this.state;
+    if (['numbered-list', 'bulleted-list'].includes(type)) {
+      const { value: { document, blocks } } = this.state;
 
       if (blocks.size > 0) {
         const parent = document.getParent(blocks.first().key);
-        isActive = this.hasBlock("list-item") && parent && parent.type === type;
+        isActive = this.hasBlock('list-item') && parent && parent.type === type;
       }
     }
 
@@ -235,6 +209,6 @@ class App extends Component {
   };
 }
 
-export default (process.env.NODE_ENV === "development"
+export default (process.env.NODE_ENV === 'development'
   ? hot(module)(App)
   : App);

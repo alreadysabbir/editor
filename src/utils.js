@@ -1,12 +1,13 @@
-import { Block } from "slate";
+import imageExtensions from 'image-extensions';
+import { Block } from 'slate';
 
 export function saveToLocal(value) {
   const editorContents = JSON.stringify(value.toJSON());
-  localStorage.setItem("content", editorContents);
+  localStorage.setItem('content', editorContents);
 }
 
 export function getLocalContents() {
-  return JSON.parse(localStorage.getItem("content"));
+  return JSON.parse(localStorage.getItem('content'));
 }
 
 export function isDocumentEdited(state, value) {
@@ -19,15 +20,22 @@ export function insertImage(editor, src, target) {
   }
 
   editor.insertBlock({
-    type: "image",
+    type: 'image',
     data: { src }
   });
 }
 
+function getExtension(url) {
+  return new URL(url).pathname.split('.').pop();
+}
+
+export function isImage(url) {
+  return imageExtensions.includes(getExtension(url));
+}
 
 export function normalize(editor, { code, node, child }) {
-  if (code === "last_child_type_invalid") {
-    const paragraph = Block.create("paragraph");
+  if (code === 'last_child_type_invalid') {
+    const paragraph = Block.create('paragraph');
     return editor.insertNodeByKey(node.key, node.nodes.size, paragraph);
   }
 }
