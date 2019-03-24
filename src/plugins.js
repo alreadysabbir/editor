@@ -1,5 +1,6 @@
 import { isKeyHotkey } from 'is-hotkey';
 import { dropOrPaste, linkPaste } from './utils';
+import Lists from '@convertkit/slate-lists';
 
 function MarkHotkeys(options) {
   const isBoldHotkey = isKeyHotkey('mod+b');
@@ -42,4 +43,20 @@ function LinkPaste(options) {
   };
 }
 
-export default [MarkHotkeys(), LinkPaste(), PasteOrDropImage()];
+export default [
+  MarkHotkeys(),
+  LinkPaste(),
+  PasteOrDropImage(),
+  Lists({
+    blocks: {
+      ordered_list: 'ordered-list',
+      unordered_list: 'unordered-list',
+      list_item: 'list-item'
+    },
+    classNames: {
+      ordered_list: 'ordered-list',
+      unordered_list: 'unordered-list',
+      list_item: 'list-item'
+    }
+  })
+];
