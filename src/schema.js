@@ -1,8 +1,8 @@
-import { normalize } from "./utils";
+import { normalize } from './utils';
 
 export default {
   document: {
-    last: { type: "paragraph" },
+    last: { type: 'paragraph' },
     normalize
   },
   blocks: {
