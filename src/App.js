@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Editor } from 'slate-react';
+import { Editor, getEventRange } from 'slate-react';
 import { Value } from 'slate';
 import { hot } from 'react-hot-loader';
 
@@ -7,9 +7,14 @@ import {
   getLocalContents,
   saveToLocal,
   isDocumentEdited,
-  insertImage
+  insertImage,
+  fileUploader,
+  filesInsert,
+  imageFilesInsert,
+  wrapLink,
+  unwrapLink
 } from './utils';
-import { Toolbar, Button } from './Components';
+import { Toolbar, Button, FileNode } from './Components';
 import initialContents from './initialContents.json';
 import schema from './schema';
 import plugins from './plugins';
@@ -19,7 +24,21 @@ require('./icons');
 const savedContents = getLocalContents();
 const DEFAULT_NODE = 'paragraph';
 
+function FNode(props) {
+  return (
+    <pre {...props.attributes}>
+      <code>{props.children}</code>
+    </pre>
+  );
+}
+
 class App extends Component {
+  constructor() {
+    super();
+    this.inputImageFile = React.createRef();
+    this.inputFile = React.createRef();
+  }
+
   state = {
     value: Value.fromJSON(savedContents || initialContents)
   };
@@ -30,6 +49,42 @@ class App extends Component {
   onUndo = event => {
     event.preventDefault();
     this.editor.undo();
+  };
+  onLink = event => {
+    event.preventDefault();
+
+    const { editor } = this;
+    const { value } = editor;
+    const hasLinks = this.hasLinks();
+
+    if (hasLinks) {
+      editor.command(unwrapLink);
+    } else if (value.selection.isExpanded) {
+      const href = window.prompt('Enter the URL of the link:');
+
+      if (href == null) {
+        return;
+      }
+
+      editor.command(wrapLink, href);
+    } else {
+      const href = window.prompt('Enter the URL of the link:');
+
+      if (href == null) {
+        return;
+      }
+
+      const text = window.prompt('Enter the text for the link:');
+
+      if (text == null) {
+        return;
+      }
+
+      editor
+        .insertText(text)
+        .moveFocusBackward(text.length)
+        .command(wrapLink, href);
+    }
   };
   onImage = event => {
     event.preventDefault();
@@ -47,6 +102,21 @@ class App extends Component {
   onClickMark = (event, type) => {
     event.preventDefault();
     this.editor.toggleMark(type);
+  };
+
+  onOpenImage = event => {
+    this.inputImageFile.current.click();
+  };
+  onOpenFile = event => {
+    this.inputFile.current.click();
+  };
+
+  onImageFileSelect = event => {
+    fileUploader(event, this.editor, imageFilesInsert);
+  };
+
+  onFileSelect = event => {
+    fileUploader(event, this.editor, filesInsert);
   };
 
   onClickBlock = (event, type) => {
@@ -102,6 +172,10 @@ class App extends Component {
     const { value } = this.state;
     return value.blocks.some(node => node.type === type);
   };
+  hasLinks = () => {
+    const { value } = this.state;
+    return value.inlines.some(inline => inline.type === 'link');
+  };
 
   ref = editor => {
     this.editor = editor;
@@ -110,20 +184,7 @@ class App extends Component {
   render() {
     return (
       <div className="appcontainer">
-        <Toolbar>
-          <Button icon="save" />
-          <Button icon="undo" onClick={this.onUndo} />
-          <Button icon="redo" onClick={this.onRedo} />
-          {this.renderMarkButton('bold', 'bold')}
-          {this.renderMarkButton('italic', 'italic')}
-          {this.renderMarkButton('underlined', 'underline')}
-          {this.renderBlockButton('block-quote', 'quote-right')}
-          {this.renderBlockButton('numbered-list', 'list-ol')}
-          {this.renderBlockButton('bulleted-list', 'list-ul')}
-          <Button icon="images" onClick={this.onImage} />
-          <Button icon="link" />
-          <Button icon="paperclip" />
-        </Toolbar>
+        {this.renderToolbar()}
         <div className="editor">
           <Editor
             spellCheck
@@ -142,6 +203,43 @@ class App extends Component {
     );
   }
 
+  renderToolbar = () => (
+    <Toolbar>
+      <Button icon="save" />
+      <Button icon="undo" onClick={this.onUndo} />
+      <Button icon="redo" onClick={this.onRedo} />
+      {this.renderMarkButton('bold', 'bold')}
+      {this.renderMarkButton('italic', 'italic')}
+      {this.renderMarkButton('underlined', 'underline')}
+      {this.renderBlockButton('block-quote', 'quote-right')}
+      {this.renderBlockButton('numbered-list', 'list-ol')}
+      {this.renderBlockButton('bulleted-list', 'list-ul')}
+      <Button icon="images" onClick={this.onImage} />
+      <Button icon="file-image" onClick={this.onOpenImage} />
+      <Button icon="file-upload" onClick={this.onOpenFile} />
+      <Button icon="link" onClick={this.onLink} />
+      {this.inputRenderer()}
+    </Toolbar>
+  );
+
+  inputRenderer = () => (
+    <div>
+      <input
+        ref={this.inputImageFile}
+        type="file"
+        style={{ display: 'none' }}
+        onChange={this.onImageFileSelect}
+        accept="image/*"
+      />
+      <input
+        ref={this.inputFile}
+        type="file"
+        style={{ display: 'none' }}
+        onChange={this.onFileSelect}
+        accept="application/pdf,text/plain"
+      />
+    </div>
+  );
   nodesRenderer = (props, editor, next) => {
     const { attributes, children, node, isFocused } = props;
     switch (node.type) {
@@ -156,6 +254,20 @@ class App extends Component {
       case 'image': {
         const src = node.data.get('src');
         return <img src={src} selected={isFocused} {...attributes} alt="" />;
+      }
+      case 'link': {
+        const { data } = node;
+        const href = data.get('href');
+        return (
+          <a {...attributes} href={href}>
+            {children}
+          </a>
+        );
+      }
+      case 'file': {
+        const data = node.data.toObject();
+
+        return <FileNode {...data} />;
       }
       default:
         return next();
