@@ -5,11 +5,10 @@
   background: #ffffff;
   min-height: 90vh;
 }
+
 .editor {
   margin-top: 20px;
 }
-
-
 
 .toolbar {
   padding: 0 0 10px 0;
@@ -24,9 +23,15 @@
   font-family: sans-serif;
   cursor: pointer;
   text-align: center;
+  color: #555555;
   transition: background 250ms ease-in-out, transform 150ms ease;
 }
 
 .toolbar-button:focus, .toolbar-button:active {
   border: none
+}
+
+blockquote {
+  border-left: 2px solid grey;
+  padding-left: 10px;
 }
