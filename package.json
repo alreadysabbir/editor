@@ -16,7 +16,6 @@
     "react-hot-loader": "^4.8.0",
     "react-scripts": "2.1.8",
     "slate": "^0.44.12",
-    "slate-drop-or-paste-images": "^0.9.1",
     "slate-react": "^0.21.18"
   },
   "scripts": {
