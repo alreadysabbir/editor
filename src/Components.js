@@ -7,10 +7,11 @@ export function Toolbar({ children }) {
   return <div className="toolbar">{children}</div>;
 }
 
-export function Button({ onClick, icon }) {
+export function Button({ onClick, icon, active }) {
+  const color = active ? `#000` : `#777`;
   return (
     <button className="toolbar-button" onClick={onClick}>
-      <FontAwesomeIcon icon={icon} size="2x" />
+      <FontAwesomeIcon icon={icon} size="2x" color={color} />
     </button>
   );
 }
