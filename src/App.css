@@ -35,3 +35,9 @@ blockquote {
   border-left: 2px solid grey;
   padding-left: 10px;
 }
+
+.file {
+  border: 2px solid;
+  padding: 20px 2px 0 2px;
+  margin: 2px 2px;
+}
