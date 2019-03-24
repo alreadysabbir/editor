@@ -40,8 +40,10 @@ class App extends Component {
   }
 
   state = {
-    value: Value.fromJSON(savedContents || initialContents)
+    value: Value.fromJSON(savedContents || initialContents),
+    limit: 10
   };
+
   onRedo = event => {
     event.preventDefault();
     this.editor.redo();
@@ -49,6 +51,25 @@ class App extends Component {
   onUndo = event => {
     event.preventDefault();
     this.editor.undo();
+  };
+  onSave = event => {
+    if (this.isLimitReached()) {
+      alert('Maximum Limit Reached!');
+    }
+    saveToLocal(this.state.value);
+  };
+  onRestore = event => {
+    const saved = Value.fromJSON(savedContents);
+    let discard;
+    if (isDocumentEdited(this.state, saved)) {
+      // eslint-disable-next-line no-restricted-globals
+      discard = confirm('Document has changed! Are you sure?');
+    }
+    if (discard) {
+      this.setState({
+        value: saved
+      });
+    }
   };
   onLink = event => {
     event.preventDefault();
@@ -93,9 +114,10 @@ class App extends Component {
     this.editor.command(insertImage, src);
   };
   onChange = ({ value }) => {
-    if (isDocumentEdited(this.state, value)) {
-      saveToLocal(value);
-    }
+    // // autosave
+    // if (isDocumentEdited(this.state, value)) {
+    //   saveToLocal(value);
+    // }
     this.setState({ value });
   };
 
@@ -129,7 +151,6 @@ class App extends Component {
 
   isList = () => {
     const { value } = this.state;
-    value.blocks.forEach(block => console.log(block.type));
     return value.blocks.some(block => block.type === 'list-item-child');
   };
 
@@ -151,6 +172,8 @@ class App extends Component {
     this.editor = editor;
   };
 
+  isLimitReached = () =>
+    this.state.value.document.nodes.size >= this.state.limit;
   render() {
     return (
       <div className="appcontainer">
@@ -172,10 +195,20 @@ class App extends Component {
       </div>
     );
   }
+  onLimitChange = event => {
+    this.setState({
+      limit: event.target.value
+    });
+  };
 
   renderToolbar = () => (
     <Toolbar>
-      <Button icon="save" />
+      <Button
+        icon="save"
+        active={!this.isLimitReached()}
+        onClick={this.onSave}
+      />
+      <Button icon="trash" onClick={this.onRestore} />
       <Button icon="undo" onClick={this.onUndo} />
       <Button icon="redo" onClick={this.onRedo} />
       {this.renderMarkButton('bold', 'bold')}
@@ -188,6 +221,13 @@ class App extends Component {
       <Button icon="file-image" onClick={this.onOpenImage} />
       <Button icon="file-upload" onClick={this.onOpenFile} />
       <Button icon="link" onClick={this.onLink} />
+      <input
+        type="number"
+        style={{ width: `35px`, padding: `10px` }}
+        value={this.state.limit}
+        onChange={this.onLimitChange}
+      />
+      <span>{'<-- limit'}</span>
       {this.inputRenderer()}
     </Toolbar>
   );
@@ -271,11 +311,10 @@ class App extends Component {
   };
 
   renderBlockButton = (type, icon) => {
-    const isActive = this.hasBlock(type);
     return (
       <Button
         icon={icon}
-        active={isActive}
+        active={false}
         onClick={event => this.onClickBlock(event, type)}
       />
     );
