@@ -15,7 +15,8 @@ import {
   faFileUpload,
   faFileImage,
   faFilePdf,
-  faFile
+  faFile,
+  faTrash
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -34,5 +35,6 @@ library.add(
   faFileUpload,
   faFileImage,
   faFilePdf,
-  faFile
+  faFile,
+  faTrash
 );
