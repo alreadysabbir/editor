@@ -23,6 +23,7 @@ require('./icons');
 
 const savedContents = getLocalContents();
 const DEFAULT_NODE = 'paragraph';
+const listTypes = ['ordered-list', 'unordered-list'];
 
 function FNode(props) {
   return (
@@ -137,10 +138,16 @@ class App extends Component {
   };
   onClickBlock = (event, type) => {
     event.preventDefault();
-    if (this.isList()) {
-      this.editor.unwrapList();
+    const { editor } = this;
+    const isActive = this.hasBlock(type);
+    if (listTypes.includes(type)) {
+      if (this.isList()) {
+        editor.unwrapList();
+      } else {
+        editor.wrapList({ type });
+      }
     } else {
-      this.editor.wrapList({ type });
+      editor.setBlocks(isActive ? DEFAULT_NODE : type);
     }
   };
 
