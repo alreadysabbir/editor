@@ -271,7 +271,15 @@ class App extends Component {
 
       case 'image': {
         const src = node.data.get('src');
-        return <img src={src} selected={isFocused} {...attributes} alt="" />;
+        return (
+          <img
+            src={src}
+            selected={isFocused}
+            {...attributes}
+            alt=""
+            className="image-node"
+          />
+        );
       }
       case 'link': {
         const { data } = node;

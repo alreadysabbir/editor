@@ -41,3 +41,9 @@ blockquote {
   padding: 20px 2px 0 2px;
   margin: 2px 2px;
 }
+
+.image-node {
+  object-fit: contain;
+  max-height: 400px;
+  max-width: 800px;
+}
