@@ -54,12 +54,14 @@ class App extends Component {
     this.editor.undo();
   };
   onSave = event => {
+    event.preventDefault();
     if (this.isLimitReached()) {
       alert('Maximum Limit Reached!');
     }
     saveToLocal(this.state.value);
   };
   onRestore = event => {
+    event.preventDefault();
     const saved = Value.fromJSON(savedContents);
     let discard;
     if (isDocumentEdited(this.state, saved)) {
@@ -123,9 +125,11 @@ class App extends Component {
   };
 
   onOpenImage = event => {
+    event.preventDefault();
     this.inputImageFile.current.click();
   };
   onOpenFile = event => {
+    event.preventDefault();
     this.inputFile.current.click();
   };
 
