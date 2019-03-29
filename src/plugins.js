@@ -1,5 +1,5 @@
-import { isKeyHotkey } from 'is-hotkey';
-import { dropOrPaste, linkPaste } from './utils';
+import { isKeyHotkey, isHotkey } from 'is-hotkey';
+import { dropOrPaste, linkPaste, onTab } from './utils';
 import Lists from '@convertkit/slate-lists';
 
 function MarkHotkeys(options) {
@@ -7,6 +7,8 @@ function MarkHotkeys(options) {
   const isItalicHotkey = isKeyHotkey('mod+i');
   const isUnderlinedHotkey = isKeyHotkey('mod+u');
   const isSaveHotkey = isKeyHotkey('mod+s');
+  const isTab = isHotkey('tab');
+
   return {
     onKeyDown(event, editor, next) {
       let mark;
@@ -20,6 +22,9 @@ function MarkHotkeys(options) {
       } else if (isSaveHotkey(event)) {
         event.preventDefault();
         return next();
+      } else if (isTab(event)) {
+        event.preventDefault();
+        return onTab(editor);
       } else {
         return next();
       }

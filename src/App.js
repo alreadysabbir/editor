@@ -21,17 +21,9 @@ import plugins from './plugins';
 import './App.css';
 require('./icons');
 
-const savedContents = getLocalContents();
+let savedContents = getLocalContents();
 const DEFAULT_NODE = 'paragraph';
 const listTypes = ['ordered-list', 'unordered-list'];
-
-function FNode(props) {
-  return (
-    <pre {...props.attributes}>
-      <code>{props.children}</code>
-    </pre>
-  );
-}
 
 class App extends Component {
   constructor() {
@@ -59,9 +51,11 @@ class App extends Component {
       alert('Maximum Limit Reached!');
     }
     saveToLocal(this.state.value);
+    savedContents = getLocalContents();
   };
   onRestore = event => {
     event.preventDefault();
+    if (!savedContents) return;
     const saved = Value.fromJSON(savedContents);
     let discard;
     if (isDocumentEdited(this.state, saved)) {
@@ -144,6 +138,7 @@ class App extends Component {
     event.preventDefault();
     const { editor } = this;
     const isActive = this.hasBlock(type);
+
     if (listTypes.includes(type)) {
       if (this.isList()) {
         editor.unwrapList();
@@ -289,7 +284,11 @@ class App extends Component {
         const { data } = node;
         const href = data.get('href');
         return (
-          <a {...attributes} href={href}>
+          <a
+            {...attributes}
+            href={href}
+            onMouseDown={e => window.open(href, '_blank')}
+          >
             {children}
           </a>
         );

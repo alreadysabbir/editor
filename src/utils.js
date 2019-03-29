@@ -22,20 +22,30 @@ export function insertImage(editor, src, target) {
     editor.select(target);
   }
 
-  editor.insertBlock({
-    type: 'image',
-    data: { src }
-  });
+  editor
+    .insertBlock({
+      type: 'image',
+      data: { src }
+    })
+    .moveFocusToEndOfDocument();
 }
 
 export function insertFile(editor, data, target) {
   if (target) {
     editor.select(target);
   }
-  editor.insertBlock({
+  console.log(editor);
+  window.editor = editor;
+  window.selectedFile = {
     type: 'file',
     data
-  });
+  };
+  editor
+    .insertBlock({
+      type: 'file',
+      data
+    })
+    .moveFocusToEndOfDocument();
 }
 
 function getExtension(url) {
@@ -137,4 +147,15 @@ export function linkPaste(event, editor, next) {
 export function confirmDownload(e) {
   // eslint-disable-next-line no-restricted-globals
   !confirm(`Download ${name}?`) && e.preventDefault();
+}
+
+export function onTab(editor) {
+  const { document, startBlock } = editor.value;
+  const listItem = document.getParent(startBlock.key);
+  const depth = document.getDepth(listItem.key);
+  if (!listItem) return;
+  if (depth > 4) {
+    return;
+  }
+  editor.increaseListItemDepth();
 }
